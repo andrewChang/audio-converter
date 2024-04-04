@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Converter</title>
+</head>
+
+<body>
+  <label for="audioFile">Select an audio file:</label>
+  <input type="file" id="audioFile" accept=".mp3, .wav" placeholder="Select an audio file...">
+  <button id="convertButton">Convert</button>
+  <button id="playButton" disabled>Play</button>
+
+  <audio id="audioPlayer" controls style="display: none;"></audio>
+
+  <script>
+    
+    window.addEventListener('DOMContentLoaded', () => {
+        const { ipcRenderer } = window.electron;
+        // const { ipcRenderer } = require('electron');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playButton = document.getElementById('playButton');
+
+        document.getElementById('convertButton').addEventListener('click', function () {
+        const audioFile = document.getElementById('audioFile').files[0];
+        if (!audioFile) return;
+
+        const filePath = audioFile.path;
+        console.log('select file, filename='+filePath);
+        ipcRenderer.send('convert-audio', filePath);
+        });
+
+        ipcRenderer.on('conversion-done', (event, convertedFilePath) => {
+        // Enable the play button
+        playButton.disabled = false;
+        console.log('convertedFilePath='+convertedFilePath);
+        // Set the src attribute of the audio player to the converted file
+        audioPlayer.src = convertedFilePath;
+        playButton.addEventListener('click', function () {
+        audioPlayer.play();
+        });
+    });
+    
+    });
+    
+  </script>
+</body>
+
+</html>
